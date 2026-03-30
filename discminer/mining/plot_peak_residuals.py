@@ -64,6 +64,7 @@ yc = best['orientation']['yc']
 
 ctitle, clabel, clim, cfmt, cmap_mom, cmap_res, levels_im, levels_cc, unit = get_2d_plot_decorators(args.moment, parfile=parfile, unit_simple=True, fmt_vertical=True)
 
+kwargs_planet = dict(edgecolors='k', facecolors='none', marker='o', lw=2.5, alpha=1.0, zorder=22, linestyle='--') 
 #****************
 #SOME DEFINITIONS
 #****************
@@ -234,12 +235,16 @@ if args.clusters:
         print(30*'*')    
         print(repr(e))
         print('Cluster finder algorithm failed due to the low number of input points. Try changing the number of clusters to use or the disc extent...')
-        print(30*'*')        
+        print(30*'*')
+        print('Variance Phi',pick.var_y_sort_phi)
+        print('Stddv Phi',np.sqrt(pick.var_x_sort_phi))
+        print('Variance R',pick.var_y_sort_R)
+        print('Stddv R',np.sqrt(pick.var_x_sort_R))        
         found_clusters = False
 else:
     found_clusters = False    
 
-    
+
 #*************
 #PLOT CLUSTERS
 #*************
@@ -256,8 +261,8 @@ def plot_sizeaxes(fig, val, tick_params={}):
                       labelleft=True, labelright=False,
                       bottom=False, labelbottom=False,
                       labeltop=False, top=False,
-                      color='0.8', labelcolor='0.6', rotation=45,
-                      size=6.0, width=3.0, labelsize=args.fontsize-3)
+                      color='0.8', labelcolor='k', rotation=45,
+                      size=8.0, width=3.0, labelsize=args.fontsize)
     new_params.update(tick_params)
     fakecolor = new_params['color']
     y = np.sort(val)
@@ -265,7 +270,7 @@ def plot_sizeaxes(fig, val, tick_params={}):
     ylim = y[-1]*0.15
     ax.set_ylim(y[0]-ylim, y[-1]+ylim)
     ax.set_xlim(-1.2,1.2)
-    ax.set_ylabel(r'Peak residual [km/s]', fontsize=args.fontsize-4, color='0.6', labelpad=20, rotation=-90)
+    ax.set_ylabel(r'Peak residual [km/s]', fontsize=args.fontsize, color='k', labelpad=20, rotation=-90)
     ax.yaxis.set_label_position('right')
     for side in ['top','bottom','left','right']:
         ax.spines[side].set_linewidth(3.5)
@@ -315,13 +320,13 @@ if found_clusters and args.clusters:
     ind_out_clusters = ~ind_in_clusters 
                                                                            
     ax.scatter(pphi, rr, marker='o', facecolors='0.5', edgecolors='none', s=6, zorder=12)
-    ax.scatter(pphi[ind_out_clusters], rr[ind_out_clusters], marker='o', facecolors='#648FFF', edgecolors='k', s=size_markers(peak_resid[ind_out_clusters]), alpha=0.14, zorder=13)
-    ax.scatter(pphi[ind_in_clusters], rr[ind_in_clusters], marker='o', facecolors='#DC267F', edgecolors='k', s=size_markers(peak_resid[ind_in_clusters]), alpha=0.14, zorder=14)
+    ax.scatter(pphi[ind_out_clusters], rr[ind_out_clusters], marker='o', facecolors='#648FFF', edgecolors='k', s=size_markers(peak_resid[ind_out_clusters]), alpha=0.3, zorder=13)
+    ax.scatter(pphi[ind_in_clusters], rr[ind_in_clusters], marker='o', facecolors='#DC267F', edgecolors='k', s=size_markers(peak_resid[ind_in_clusters]), alpha=0.3, zorder=14)
 
-    ax.scatter(np.radians(pick.acc_phi), pick.acc_R, marker='X', s=270, facecolor='palegreen', edgecolor='k', lw=2., label='Inferred planet', zorder=15)
+    ax.scatter(np.radians(pick.acc_phi), pick.acc_R, marker='X', s=400, alpha=0.8, facecolor='palegreen', edgecolor='k', lw=2., label='Inferred planet', zorder=15)
 
-    kwargs_planet = dict(edgecolors='k', facecolors='none', marker='o', lw=2.5, alpha=1.0, zorder=22)    
-    mark_planet_location(ax, args, s=270, coords='disc', projection='polar', return_phiunit='radians', model=model, **kwargs_planet)    
+   
+    mark_planet_location(ax, args, s=450, coords='disc', projection='polar', return_phiunit='radians', model=model, **kwargs_planet)    
     
     for i in range(len(pick.acc_peaks_phi)):
         std_az_peak = np.std(pphi[ind_cluster_acc_phi[i]])
@@ -349,7 +354,7 @@ if found_clusters and args.clusters:
     for gap in gaps:
         ax.plot(fill_angs, [gap]*50, color='k', ls='--', lw=1.6, alpha=1)
  
-    ri = ax.set_rgrids(np.arange(100, rlim, 100))#, labels=) 
+    ri = ax.set_rgrids(np.arange(50, rlim, 50))#, labels=) 
     ax.tick_params(labelleft=False, labelright=True, rotation=45, labelsize=args.fontsize)
     labels=np.arange(-90, 91, 45)
     labels=[str(lab)+r'$^{\rm o}$' for lab in labels]
@@ -456,12 +461,10 @@ if args.projection=='cartesian':
             print ('Cluster in sky coords,', format_sky_coords(acc_R_rsky, acc_phi_PAsky))
             
     #Mark planet location if passed as an arg
-    kwargs_planet = dict(edgecolors='k', facecolors='none', marker='o', lw=4.5, alpha=1.0, zorder=22)    
-
-    mark_planet_location(ax, args, s=sb+300, coords='disc', model=model, **kwargs_planet)    
+    mark_planet_location(ax, args, s=sb+200, coords='disc', model=model, **kwargs_planet)    
     
     #mark_planet_location(ax, args, s=sb+200, **kwargs_planet)
-    ax.scatter(None, None, label='Planet', s=sb, **kwargs_planet) #for legend
+    ax.scatter(None, None, label='WISPIT 2b', s=sb, **kwargs_planet) #for legend
             
     if len(args.rp)>0 and args.show_legend:
         make_1d_legend(ax, handlelength=1.5, loc='lower center', bbox_to_anchor=(0.5, 1.02), fontsize=args.fontsize)
